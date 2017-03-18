@@ -22,4 +22,20 @@ public class Edge {
         this.Y2 = Y2;
         this.color = color;
     }
+
+    /** Print some additional information on the Edge attributes
+     *
+     * @return some additional attribute information about the Edge klasse
+     */
+    @Override
+    public String toString() {
+        return "Edge{" +
+                "X1=" + X1 +
+                ", Y1=" + Y1 +
+                ", X2=" + X2 +
+                ", Y2=" + Y2 +
+                ", color=" + color +
+                '}';
+    }
+
 }

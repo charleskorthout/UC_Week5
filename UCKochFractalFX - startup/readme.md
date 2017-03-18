@@ -36,36 +36,147 @@ Voeg een Observer toe die de edge-coördinaten print:
     Edge e = (Edge)o1;
 Maak in de main methode van je console applicatie een object van deze klasse en voeg dat als Observer toe aan het KochFractal object.
 
+#### 1.a ConsoleObserver
+Allereerst moetren we de ConsoleObserver klasse maken die de interface Observer implementeert
+
+``` java 
+package calculate;
+import java.util.Observable;
+
+/**
+ * Console observer to enable printing of Edge information using the Observer/Observable pattern
+ */
+public class ConsoleObserver implements java.util.Observer{
+    @Override
+    public void update(Observable o, Object arg) {
+        Edge e = (Edge)arg;
+        System.out.print(e.toString());
+    }
+}
+``` 
+
+Ten tweede moeten we de Edge klasse aanpassen met een iets meer informatierijkere toString methode, zodat we die later kunnen gebruiken.
+
+``` java 
+/** Print some additional information on the Edge attributes
+     * 
+     * @return some additional attribute information about the Edge klasse
+     */
+    @Override
+    public String toString() {
+        return "Edge{" +
+                "X1=" + X1 +
+                ", Y1=" + Y1 +
+                ", X2=" + X2 +
+                ", Y2=" + Y2 +
+                ", color=" + color +
+                '}';
+    }
+```
+Tot slot willen we deze informatie gebruiken in de KochManager. Hiervoor moeten we het tweede deel van het Observer/Observable patroon toevoegen. 
+De klasse Kochmanager overerft Observable.
+
+``` java 
+public class KochManager extends Observable
+```
+
+aan de KochManager is een main methode toegevoegd om specifiek de KochFractal te kunnen testen.
+
+``` java 
+/**
+ * Created by Charles Korthout on 3/17/2017.
+ */
+public class KochManager extends Observable {
+    private UCKochFractalFX application;
+    private KochFractal koch = null;
+
+    public KochManager(UCKochFractalFX application) {
+        this.application = application;
+        koch = new KochFractal();
+        koch.setLevel(1);
+    }
+
+    public void changeLevel(int nxt) {
+        koch.setLevel(nxt);
+        drawEdges();
+    }
+
+    public void drawEdges() {
+        application.clearKochPanel();
+        koch.generateLeftEdge();
+        koch.generateBottomEdge();
+        koch.generateRightEdge();
+    }
+    
+    public static void main(String[] args) {
+        KochFractal koch = new KochFractal();
+        koch.addObserver(new ConsoleObserver());
+        koch.setLevel(1);
+        koch.generateLeftEdge();
+        koch.generateBottomEdge();
+        koch.generateRightEdge();
+        koch.notifyObservers();
+    }
+}
+```
+
+Het resultaat dat wordt afgedrukt ziet er als volgt uit:
+
+``` 
+
+Edge{X1=0.5, Y1=0.0, X2=0.0669872981077807, Y2=0.75, color=0x00ff00ff}
+Edge{X1=0.0669872981077807, Y1=0.75, X2=0.9330127018922193, Y2=0.75, color=0x0000ffff}
+Edge{X1=0.9330127018922193, Y1=0.75, X2=0.5, Y2=0.0, color=0xff0000ff}
+
+```
+Zoals te zien is wordt er slechts drie maal Edge afgedrukt.
+
 ### 2.	
 Als het goed is worden nu de coördinaten van 3 edges afgedrukt omdat we het level hadden ingesteld op 1, hetgeen een driehoek voorstelt. De eind-coördinaat van elke edge is gelijk aan de begin-coördinaat van de volgende edge.
 Stel het level vervolgens in op 2. Er moeten dan 12 edges geprint worden, waarbij ook weer  de eind-coördinaat van elke edge gelijk is aan de begin-coördinaat van de volgende edge. Merk op dat alle geprinte coördinaten in de range [0..1] liggen. 
+Hiervoor hoeft in de main methode alleen setLevel veranderd te worden. Dit is hieronder aangegeven.
+
+
+``` java
+public static void main(String[] args) {
+        KochFractal koch = new KochFractal();
+        koch.addObserver(new ConsoleObserver());
+        koch.setLevel(2);
+        koch.generateLeftEdge();
+        koch.generateBottomEdge();
+        koch.generateRightEdge();
+        koch.notifyObservers();
+    }
+```
+Het resultaat moet nu zijn dat er 12 x Edge informatie wordt geprint. 
+``` java
+
+Edge{X1=0.5, Y1=0.0, X2=0.35566243270259357, Y2=0.25, color=0xff8000ff}
+Edge{X1=0.35566243270259357, Y1=0.25, X2=0.0669872981077807, Y2=0.25000000000000006, color=0xffff00ff}
+Edge{X1=0.0669872981077807, Y1=0.25000000000000006, X2=0.21132486540518713, Y2=0.5, color=0x80ff00ff}
+Edge{X1=0.21132486540518713, Y1=0.5, X2=0.0669872981077807, Y2=0.75, color=0x00ff00ff}
+Edge{X1=0.0669872981077807, Y1=0.75, X2=0.35566243270259357, Y2=0.75, color=0x00ff80ff}
+Edge{X1=0.35566243270259357, Y1=0.75, X2=0.5, Y2=1.0, color=0x00ffffff}
+Edge{X1=0.5, Y1=1.0, X2=0.6443375672974064, Y2=0.75, color=0x0080ffff}
+Edge{X1=0.6443375672974064, Y1=0.75, X2=0.9330127018922193, Y2=0.75, color=0x0000ffff}
+Edge{X1=0.9330127018922193, Y1=0.75, X2=0.7886751345948129, Y2=0.5, color=0x8000ffff}
+Edge{X1=0.7886751345948129, Y1=0.5, X2=0.9330127018922192, Y2=0.25, color=0xff00ffff}
+Edge{X1=0.9330127018922192, Y1=0.25, X2=0.6443375672974064, Y2=0.25, color=0xff0080ff}
+Edge{X1=0.6443375672974064, Y1=0.25, X2=0.5, Y2=0.0, color=0xff0000ff}
+
+```
 
 ### 3.	
 We gaan nu verder met de Java FX applicatie in het project UCKochFractalFX. Maak een nieuwe klasse KochManager in het package calculate. Creëer een KochFractal object en zorg ervoor dat klasse KochManager een Observer wordt van de fractal.  De constructor van deze klasse wordt aangeroepen in UCKochFractalFX met een referentie naar de Java FX applicatie zelf. De klasse KochManager heeft dus een private attribuut application dat een waarde krijgt in de constructor:
 
-```java
-private UCKochFractalFX application;
-public KochManager(UCKochFractalFX application) {
-    this.application = application;
-}
-```
-
+#### 3.1 KochManager
 Vanuit de klasse UCKochFractalFX worden de volgende twee methoden aangeroepen: 
 ```java
-
 public void changeLevel(int nxt)
 public void drawEdges()
-
 ```
 
 In de methode changeLevel() wordt het level van de Koch fractal aangepast en worden de edges getekend:
-```java
-public void changeLevel(int nxt) {
-    koch.setLevel(nxt);
-    drawEdges();
-}
-```
-
 
 In de methode drawEdges() wordt het panel gecleared en worden de edges gegenereerd en getekend:
 ``` java 
@@ -80,15 +191,51 @@ public void drawEdges() {
 
 Net als in de Console-applicatie moet KochManager het Observer interface implementeren. Het daadwerkelijk tekenen van een edge kan dan gedaan worden door de methode update():
 ```java
-
 public void update (Observable o, Object arg) {
-    application.drawEdge((Edge)arg);
-    
+    application.drawEdge((Edge)arg);    
 }
+``` 
 
+De gehele KochManager klasse wordt nu.
+
+```java
+public class KochManager implements Observer {
+    private UCKochFractalFX application;
+    private KochFractal koch = null;
+
+    public KochManager(UCKochFractalFX application) {
+        this.application = application;
+        koch = new KochFractal();
+        koch.addObserver(this);
+        koch.setLevel(1);
+    }
+
+    public void changeLevel(int nxt) {
+        koch.setLevel(nxt);
+        drawEdges();
+    }
+
+    public void drawEdges() {
+        application.clearKochPanel();
+        koch.generateLeftEdge();
+        koch.generateBottomEdge();
+        koch.generateRightEdge();
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        application.drawEdge((Edge)arg);
+    }
+
+
+}
 ```
 
 Test nu je applicatie. Als het goed is kun je het level van de Koch fractal verhogen en verlagen. Probeer ook of je de Koch fractal kunt verplaatsen (slepen met linkermuisknop), de fractal kunt vergroten (linker muisknop) en de fractal kunt verkleinen (rechter muisknop).
+
+
+![ ](../img/2017-03-18_17-03-55.jpg)
+
 
 ### 4.	
 Definieer een ArrayList als private attribuut van de klasse KochManager. 

@@ -1,5 +1,5 @@
 package calculate;
-import javafx.beans.Observable;
+import java.util.*;
 import uckochfractalfx.UCKochFractalFX;
 
 import java.util.Observer;
@@ -7,10 +7,15 @@ import java.util.Observer;
 /**
  * Created by Charles Korthout on 3/17/2017.
  */
-public class KochManager extends Observer {
+public class KochManager implements Observer {
     private UCKochFractalFX application;
+    private KochFractal koch = null;
+
     public KochManager(UCKochFractalFX application) {
         this.application = application;
+        koch = new KochFractal();
+        koch.addObserver(this);
+        koch.setLevel(1);
     }
 
     public void changeLevel(int nxt) {
@@ -26,8 +31,9 @@ public class KochManager extends Observer {
     }
 
     @Override
-    public void update (Observable o, Object arg) {
+    public void update(Observable o, Object arg) {
         application.drawEdge((Edge)arg);
-
     }
+
+
 }
