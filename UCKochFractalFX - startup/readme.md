@@ -241,11 +241,165 @@ Test nu je applicatie. Als het goed is kun je het level van de Koch fractal verh
 Definieer een ArrayList als private attribuut van de klasse KochManager. 
 In methode update moet nu telkens de edge toegevoegd worden aan deze ArrayList. Als je dit goed doet zijn, nadat de 3 generate...Edge methodes klaar zijn, alle edges berekend en opgeslagen in de ArrayList. Gebruik een for-statement om alle edges uit de ArrayList te tekenen in methode drawEdges().
 
+Op een paar plaatsen zijn wat veranderingen aangebracht en de klasse KochManager ziet er nu als volgt uit:
+
+``` java 
+package calculate;
+import java.util.*;
+import uckochfractalfx.UCKochFractalFX;
+
+import java.util.Observer;
+
+/**
+ * Created by Charles Korthout on 3/17/2017.
+ */
+public class KochManager implements Observer {
+    private UCKochFractalFX application;
+    private KochFractal koch = null;
+    // add a list to hold the individual edges (exercise 4)
+    private List<Edge> edges = null;
+
+    public KochManager(UCKochFractalFX application) {
+        this.application = application;
+        edges = new ArrayList();
+        koch = new KochFractal();
+        koch.addObserver(this);
+        koch.setLevel(1);
+    }
+
+    public void changeLevel(int nxt) {
+        koch.setLevel(nxt);
+        drawEdges();
+    }
+
+    public void drawEdges() {
+        application.clearKochPanel();
+        koch.generateLeftEdge();
+        koch.generateBottomEdge();
+        koch.generateRightEdge();
+        edges.stream()
+             .forEach(e -> application.drawEdge(e)); // print the individual edges
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        Edge edge = (Edge)arg;
+        edges.add(edge); // add the edge to the list
+    }
+}
+
+```
+
+Het resultaat is nu dat de edges over elkaar getekend worden.
+
+
+
+![ ](../img/2017-03-19_7-19-22.jpg)
+
+
 ### 5.	
 Gebruik de TimeStamp klasse van week 2 om steeds de tijd te bepalen die nodig is om de fractal te tekenen (bepaal dus hoe lang drawEdges() duurt). Geef deze tijd weer door een aanroep van application.setTextCalc().
 
+Hiervoor maak ik een TimeStamp object, initialaiseer het in de constructor en gebruik dat in de drawEdges methode.
+
+``` java
+package calculate;
+import java.util.*;
+import uckochfractalfx.UCKochFractalFX;
+
+import java.util.Observer;
+import timeutil.TimeStamp;
+
+/**
+ * Created by Charles Korthout on 3/17/2017.
+ */
+public class KochManager implements Observer {
+    private UCKochFractalFX application;
+    private KochFractal koch = null;
+    // add a list to hold the individual edges (exercise 4)
+    private List<Edge> edges = null;
+    private TimeStamp timestamp = null; // add a timestamp to record timings (exercise 5)
+
+    public KochManager(UCKochFractalFX application) {
+        this.application = application;
+        edges = new ArrayList();
+        timestamp = new TimeStamp();
+        timestamp.init();
+        koch = new KochFractal();
+        koch.addObserver(this);
+        koch.setLevel(1);
+    }
+
+    public void changeLevel(int nxt) {
+        koch.setLevel(nxt);
+        drawEdges();
+    }
+
+    public void drawEdges() {
+        timestamp.setBegin();
+        application.clearKochPanel();
+        koch.generateLeftEdge();
+        koch.generateBottomEdge();
+        koch.generateRightEdge();
+        edges.stream()
+             .forEach(e -> application.drawEdge(e)); // print the individual edges
+        timestamp.setEnd();
+        application.setTextCalc(timestamp.toString());
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        Edge edge = (Edge)arg;
+        edges.add(edge); // add the edge to the list
+    }
+}
+
+```
+Het resultaat wordt dan als volgt:
+
+
+![ ](../img/2017-03-19_7-54-49.jpg)
+
+De timings worden na elkaar geprint. Laat ik een kleine verandering aanbrengen in de drawEdges methode en bij aanroep van de methode steeds een nieuwe TimeStamp aanmaken.
+
+``` java 
+
+    public void drawEdges() {
+        TimeStamp ts = new TimeStamp();
+        ts.init();
+        ts.setBegin();
+        application.clearKochPanel();
+        koch.generateLeftEdge();
+        koch.generateBottomEdge();
+        koch.generateRightEdge();
+        edges.stream()
+             .forEach(e -> application.drawEdge(e)); // print the individual edges
+        ts.setEnd();
+        application.setTextCalc(ts.toString());
+    }
+
+```
+
+
+
+![ ](../img/2017-03-19_8-11-52.jpg)
+
 ### 6.	
 Geef ook het aantal edges van de fractal weer door een aanroep van application.setTextNrEdges(). Klasse KochFractal heeft een methode om dit aantal op te vragen. Bewaar deze versie van het project.
+
+Het aantal edges kan vrij eenvoudig getoond worden door in de update methode het aantal elementen in de lijst op te vragen.
+
+``` java 
+
+    @Override
+    public void update(Observable o, Object arg) {
+        Edge edge = (Edge)arg;
+        edges.add(edge); // add the edge to the list
+        application.setTextNrEdges(""+edges.size());
+    }
+```
+
+![ ](../img/2017-03-19_8-19-34.jpg)
 
 ### 7.	
 Run het programma voor steeds hogere levels en maak een tabel waarin voor oplopende levels de benodigde tijd en het aantal edges weergegeven wordt. 
